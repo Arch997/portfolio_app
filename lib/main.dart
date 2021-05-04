@@ -107,7 +107,6 @@ class _PortfolioAppState extends State<PortfolioApp>
             physics: AlwaysScrollableScrollPhysics(
               parent: BouncingScrollPhysics()
             ),
-            controller: _scroll,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
