@@ -1,22 +1,23 @@
 
 import 'package:flutter/material.dart';
+import 'package:portfolio_app/widgets/contact_info.dart';
+import 'package:portfolio_app/widgets/skills_rating.dart';
+
+import 'widgets/custom_divider.dart';
+import 'widgets/drawer_list.dart';
+import 'widgets/lead_banner.dart';
+import 'widgets/projects.dart';
+import 'widgets/services_container.dart';
+
+import 'utils.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(ScreenUtilInit(
+    designSize: Size(325, 667),
+    builder: () => PortfolioApp(title: "My Portfolio"))
+  );
 }
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      title: 'Portfolio App',
-      home: PortfolioApp(title: 'My Portfolio Page'),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
 
 class PortfolioApp extends StatefulWidget {
   PortfolioApp({Key? key, required this.title}) : super(key: key);
@@ -29,10 +30,14 @@ class PortfolioApp extends StatefulWidget {
 class _PortfolioAppState extends State<PortfolioApp> 
     with SingleTickerProviderStateMixin {
 
-  late AnimationController _controller;
+  late AnimationController _animationController;
   late Animation _colorAnim;
 
   bool _isDark = false;
+
+  GlobalKey<ScaffoldState> drawerKey = GlobalKey();
+  GlobalKey introKey = GlobalKey();
+  ScrollController _scrollController = ScrollController();
 
   Animatable bgColor = TweenSequence([
       TweenSequenceItem(
@@ -54,19 +59,25 @@ class _PortfolioAppState extends State<PortfolioApp>
     ]
   );
 
-  List<double> _stops = [0.0, 0.7];
+  // List<double> _stops = [0.0, 0.7];
 
   ThemeData _light = ThemeData.light().copyWith(
     primaryColor: Colors.green,
+    visualDensity: VisualDensity.adaptivePlatformDensity
   );
   ThemeData _dark = ThemeData.dark().copyWith(
-    primaryColor: Colors.black87.withOpacity(1),
+    primaryColor: Colors.black.withOpacity(1),
+    visualDensity: VisualDensity.adaptivePlatformDensity,
   );
   
+  void _onTap() {
+    drawerKey.currentState!.openDrawer();
+  }
+
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+    _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 3000),
       debugLabel: 'Name Animation',
@@ -75,32 +86,55 @@ class _PortfolioAppState extends State<PortfolioApp>
     ..repeat()
     .whenComplete(() => setState(() {}));
 
-    _colorAnim = bgColor.animate(_controller);
+    _colorAnim = bgColor.animate(_animationController);
   }
-
+  
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       darkTheme: _dark,
       theme: _light,
       themeMode: _isDark ? ThemeMode.dark : ThemeMode.light,
       debugShowCheckedModeBanner: false,
+      title: 'Portfolio App',
       home: Scaffold(
+        key: drawerKey,
+        // drawer: DrawerList(action: Scrollable.ensureVisible(context, alignment: 30)),
         appBar: AppBar(
-          backgroundColor: Colors.blueGrey,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           title: Text(
-            'Charles\' Portfolio',
+            'Charles',
             textDirection: TextDirection.ltr,
-          ),
-          centerTitle: true,
-          leading: GestureDetector(
-            onTap: () {},
-            child: Switch.adaptive(
-              value: _isDark,
-              onChanged: (v) {
-                setState(() => _isDark = !_isDark);
-              },
+            style: TextStyle(
+              fontFamily: "Quicksand",
+              fontWeight: FontWeight.w600,
+              color: _isDark ? Colors.white : Colors.black,
             ),
           ),
+          centerTitle: true,
+          /*leading:  GestureDetector(
+            onTap: () => _onTap(),
+            child: Icon(
+              Icons.menu_rounded,
+              color: _isDark ? Colors.white : Colors.black,
+              size: 30,
+            ),
+          ),*/
+          actions: [
+            Switch.adaptive(
+              value: _isDark,
+              inactiveThumbColor: Colors.black,
+              onChanged: (v) {
+                setState(() => _isDark = !_isDark);
+                /*_scrollController.animateTo(
+                      5,
+                      duration: Duration(seconds: 1),
+                      curve: Curves.fastOutSlowIn,
+                    );*/
+              },
+            ),
+          ],
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -111,359 +145,131 @@ class _PortfolioAppState extends State<PortfolioApp>
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                LeadBanner(key: introKey),
+                SizedBox(height: 30.h),
+                CustomDivider(text: "ABOUT ME"),
                 Container(
-                  width: 300,
-                  margin: EdgeInsets.only(bottom: 10.0),
-                  padding: EdgeInsets.only(right: 30.0, top: 10),
-                  alignment: Alignment.topLeft,
+                  width: 200.w,
+                  margin: EdgeInsets.only(bottom: 10.h),
+                  /*padding: EdgeInsets.symmetric(
+                    horizontal: 50.w, 
+                    vertical: 10.h,
+                  ),*/
+                  alignment: Alignment.center,
                   child: CircleAvatar(
                     backgroundColor: Colors.grey,
                     foregroundColor: Colors.black,
-                    radius: 50.0,
+                    radius: 50.0.r,
                     backgroundImage: AssetImage(
                       'assets/images/cartoon_avi.png',
                     ),
                   ),
                 ),
                 Container(
-                  alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.only(left: 15),
+                  alignment: Alignment.center,
                   child: Text(
                     "HI THERE \u{1F44B}, I'M ",
                     textDirection: TextDirection.ltr,
                     style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 9,
+                      fontFamily: 'Quicksand',
+                      fontSize: 9.sp,
                       color: _isDark ? Colors.white : Colors.blue,
-                      fontWeight: FontWeight.w300,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
                 Wrap(
                   verticalDirection: VerticalDirection.down,
-                  alignment: WrapAlignment.start,
+                  alignment: WrapAlignment.center,
                   children: [
                     Padding(
                       padding: EdgeInsets.only(
-                        bottom: 8.0,
-                        top: 5.0,
-                        right: 180.0,
-                        left: 10
+                        bottom: 10.h
                       ),
                       child: AnimatedBuilder(
-                        animation: _controller,
+                        animation: _animationController,
                         builder: (context, child) {
                           return Text(
-                            'charles.',
+                            'charles',
                             textDirection: TextDirection.ltr,
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: _colorAnim.value,
                               fontWeight: FontWeight.bold,
-                              fontSize: 30,
-                              fontFamily: 'Raleway Regular',
+                              fontSize: 30.sp,
+                              fontFamily: 'Quicksand',
                               letterSpacing: 1.0,
                             )
                           );
                         }),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(
-                        left: 8,
-                        right: 8,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w
                       ),
                       child: Text(
-                        """A full stack software developer from Nigeria, focused on building web products and learning its architecture. I've only recently picked up Flutter for cross-platform development. Here's to hoping my design chops can also be activated on this journey \u{1f942}.
+                        """A full stack software developer from Nigeria,\nfocused on building web/mobile products, and learning their architecture. I've got experience in Python, Django, ReactJS, and Flutter for cross-platform development. Here's to hoping my design chops can also be activated on this journey \u{1f942}.
                         """,
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontWeight: FontWeight.w300,
-                          fontFamily: 'Bahij Janna',
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Quicksand',
                           letterSpacing: 0.5,
-                          fontSize: 12,
+                          fontSize: 12.sp,
                         ),
                       ),
                     ),
+                    SizedBox(height: 10.h),
+                    SkillsRating(),
+                    MyServices(),
+                    CustomDivider(text: 'MY WORK'),
                     Padding(
-                      padding: EdgeInsets.only(
-                        top: 70,
-                        left: 10,
-                        right: 10,
+                      padding: EdgeInsets.symmetric(
+                        vertical: 10.h,
+                        horizontal: 10.w
                       ),
+                      child: Text(
+                        'I have worked on a number of projects, so I have picked only the latest for you. -',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: "Quicksand",
+                          fontSize: 17.sp,
+                        ),
+                      ) ,
+                    ),
+                    SizedBox(height: 5.h),
+                    Align(
+                      alignment: Alignment.center,
                       child: Text(
                         'FEATURED PROJECTS',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontFamily: 'Raleway Regular',
-                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Quicksand',
+                          fontSize: 12.sp,
                           color: _isDark ? Colors.tealAccent :
-                            Colors.black87.withOpacity(1)
+                            Colors.black
                         ),
                       ),
                     )
                   ],
                 ),
-
-                Column(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.all(15),
-                      //padding: EdgeInsets.all(50),
-                      width: double.infinity,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(10.0),
-                        gradient: LinearGradient(
-                          colors: [Colors.pinkAccent, Colors.red],
-                          stops: _stops,
-                        )
-                        ),
-                      child: Column(
-                        children: [
-                           IconButton(
-                            icon: Image.asset(
-                              'assets/images/github-mark.png',
-                              scale: 8.0,
-                            ),
-                            alignment: Alignment.topRight,
-                            onPressed: () {},
-                            padding: EdgeInsets.only(
-                              bottom: 50.0,
-                              right: 8.0,
-                              top: 8.0,
-                              left: 230.0
-                            ),
-                          ),
-                          Text(
-                            'Email MicroApi',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                              color: Colors.black87.withOpacity(1),
-                            ),
-                          )
-                        ],
-                      )
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.all(15),
-                      //padding: EdgeInsets.all(50),
-                      width: double.infinity,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(10.0),
-                        gradient: LinearGradient(
-                            colors: [Colors.deepOrange, Colors.yellow],
-                            stops: _stops
-                          ) 
-                        ),
-                      child: Column(
-                        children: [
-                           IconButton(
-                            icon: Image.asset(
-                              'assets/images/github-mark.png',
-                              scale: 8.0,
-                            ),
-                            alignment: Alignment.topRight,
-                            onPressed: () {},
-                            padding: EdgeInsets.only(
-                              bottom: 50.0,
-                              right: 8.0,
-                              top: 8.0,
-                              left: 230.0
-                            ),
-                          ),
-                          Text(
-                            'Learning Logs',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                              color: Colors.black87.withOpacity(1),
-                            ),
-                          )
-                        ],
-                      )
-                    ),
-
-                    Container(
-                      margin: EdgeInsets.all(15),
-                      width: double.infinity,
-                      height: 200,
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(10.0),
-                        gradient: LinearGradient(
-                          colors: [Colors.blue, Colors.lime],
-                          stops: _stops
-                        )
-                      ),
-                      child: Column(
-                        children: [
-                           IconButton(
-                            icon: Image.asset(
-                              'assets/images/github-mark.png',
-                              scale: 8.0,
-                            ),
-                            alignment: Alignment.topRight,
-                            onPressed: () {},
-                            padding: EdgeInsets.only(
-                              bottom: 50.0,
-                              right: 8.0,
-                              top: 8.0,
-                              left: 230.0
-                            ),
-                          ),
-                          Text(
-                            'Haggle - Ecommerce App',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                              color: Colors.black87.withOpacity(1),
-                            ),
-                          )
-                        ],
-                      )
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10.0),
-
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: 50,
-                    left: 10,
-                    right: 250,
-                    bottom: 5
-                  ),
-                  child: Text(
-                    'CONTACT',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w300,
-                      fontFamily: 'Raleway Regular',
-                      fontSize: 10,
-                      color: _isDark ? Colors.tealAccent :
-                      Colors.black87.withOpacity(1)
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: 30,
-                    left: 10,
-                    right: 250,
-                    bottom: 1
-                  ),
-                  child: Text(
-                    'EMAIL',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w300,
-                      fontFamily: 'Raleway Regular',
-                      fontSize: 10,
-                      color: _isDark ? Colors.tealAccent :
-                        Colors.black87.withOpacity(1)
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 8,
-                    right: 100,
-                    bottom: 20,
-                  ),
-                  child: Text(
-                    'archibongc4@gmail.com',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'Bahij Janna'
-                    ),
-                  )
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 8.0,
-                    right: 250,
-                    bottom: 10,
-                  ),
-                  child: Text(
-                    'PHONE',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w300,
-                      fontFamily: 'Raleway Regular',
-                      fontSize: 10,
-                      color: _isDark ? Colors.tealAccent :
-                        Colors.black87.withOpacity(1)
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 8,
-                    right: 150,
-                    bottom: 10,
-                  ),
-                  child: Text(
-                    '+(234) 8117384652',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontFamily: 'Bahij Janna',
-                    ),
-                  )
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 8,
-                    right: 250,
-                    bottom: 10,
-                  ),
-                  child: Text(
-                    'GITHUB',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w300,
-                      fontFamily: 'Raleway Regular',
-                      fontSize: 10,
-                      color: _isDark ? Colors.tealAccent : 
-                        Colors.black87.withOpacity(1),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                    left: 8,
-                    right: 100,
-                    bottom: 30,
-                  ),
-                  child: Text(
-                    'https://github.com/Arch997',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900
-                    ),
-                  )
-                )
+                ProjectCarousel(),
+                ContactInfo(dark: _isDark),
               ],
             ),
             
           ),
         ),
       )
+      
     );
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _animationController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 }
